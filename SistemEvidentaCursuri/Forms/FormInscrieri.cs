@@ -181,7 +181,7 @@ namespace SistemEvidentaCursuri.Forms
 
         private void BtnSterge_Click(object? sender, EventArgs e)
         {
-            if (dgv.SelectedRows.Count == 0) { MessageBox.Show("Selectați o înscrierre.", "Atenție", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            if (dgv.SelectedRows.Count == 0) { MessageBox.Show("Selectați o înscriere.", "Atenție", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
             var ins = dgv.SelectedRows[0].DataBoundItem as Inscriere;
             if (ins == null) return;
 

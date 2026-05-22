@@ -47,7 +47,7 @@ namespace SistemEvidentaCursuri.Forms
             txtSearch.TextChanged += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(txtSearch.Text)) LoadData();
-                else dgv.DataSource = DatabaseHelper.SearchCursanti(txtSearch.Text);
+                else { dgv.DataSource = DatabaseHelper.SearchCursanti(txtSearch.Text); SetColumns(); }
             };
             pnlSearch.Controls.Add(txtSearch);
             this.Controls.Add(pnlSearch);
@@ -111,10 +111,14 @@ namespace SistemEvidentaCursuri.Forms
 
         private void LoadData()
         {
-            var data = DatabaseHelper.GetAllCursanti();
-            dgv.DataSource = data;
+            dgv.DataSource = DatabaseHelper.GetAllCursanti();
+            SetColumns();
+        }
+
+        private void SetColumns()
+        {
             if (dgv.Columns.Contains("IdCursant"))   dgv.Columns["IdCursant"].Visible = false;
-            if (dgv.Columns.Contains("NumeComplet")) dgv.Columns["NumeComplet"].HeaderText = "Nume Complet";
+            if (dgv.Columns.Contains("NumeComplet")) dgv.Columns["NumeComplet"].Visible = false;
             if (dgv.Columns.Contains("Nume"))        { dgv.Columns["Nume"].HeaderText = "Nume"; dgv.Columns["Nume"].Width = 150; }
             if (dgv.Columns.Contains("Prenume"))     { dgv.Columns["Prenume"].HeaderText = "Prenume"; dgv.Columns["Prenume"].Width = 150; }
             if (dgv.Columns.Contains("Telefon"))     dgv.Columns["Telefon"].HeaderText = "Telefon";
