@@ -1,3 +1,7 @@
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 using SistemEvidentaCursuri.Data;
 using SistemEvidentaCursuri.Models;
 
@@ -24,27 +28,26 @@ namespace SistemEvidentaCursuri.Forms
             this.BackColor = Color.FromArgb(245, 245, 250);
 
             // ── Top bar ──
-            var pnlTop = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.FromArgb(39, 174, 96) };
+            var pnlTop = new Panel { BackColor = Color.FromArgb(39, 174, 96) };
+            pnlTop.Height = 50;
             var lblTitle = new Label
             {
                 Text = "📚 Cursuri",
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Dock = DockStyle.Left,
-                Width = 200,
+                Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 0, 0, 0)
             };
             pnlTop.Controls.Add(lblTitle);
-            this.Controls.Add(pnlTop);
 
             // ── Filter bar ──
             var pnlFilter = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top,
                 Height = 48,
                 Padding = new Padding(10, 8, 10, 0),
-                BackColor = Color.FromArgb(240, 248, 240)
+                BackColor = Color.FromArgb(240, 248, 240),
+                Dock = DockStyle.Fill
             };
 
             pnlFilter.Controls.Add(new Label { Text = "Formator:", TextAlign = ContentAlignment.MiddleLeft, Width = 65, Height = 30 });
@@ -63,7 +66,6 @@ namespace SistemEvidentaCursuri.Forms
             var btnReset = new Button { Text = "✖ Resetează", Width = 100, Height = 30, Margin = new Padding(15, 0, 0, 0) };
             btnReset.Click += (s, e) => { txtFormator.Clear(); chkDurata.Checked = false; LoadData(); };
             pnlFilter.Controls.Add(btnReset);
-            this.Controls.Add(pnlFilter);
 
             // ── DataGridView ──
             dgv = new DataGridView
@@ -87,12 +89,12 @@ namespace SistemEvidentaCursuri.Forms
             };
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgv.ColumnHeadersHeight = 35;
-            this.Controls.Add(dgv);
+            dgv.DataBindingComplete += (s, e) => SetColumns();
 
             // ── Buttons ──
             var pnlBtn = new FlowLayoutPanel
             {
-                Dock = DockStyle.Bottom,
+                Dock = DockStyle.Fill,
                 Height = 50,
                 Padding = new Padding(10, 8, 10, 8),
                 BackColor = Color.FromArgb(240, 248, 240)
@@ -100,7 +102,27 @@ namespace SistemEvidentaCursuri.Forms
             pnlBtn.Controls.Add(MakeBtn("➕ Adaugă", Color.FromArgb(39, 174, 96), BtnAdauga_Click));
             pnlBtn.Controls.Add(MakeBtn("✏️ Modifică", Color.FromArgb(41, 128, 185), BtnModifica_Click));
             pnlBtn.Controls.Add(MakeBtn("🗑️ Șterge", Color.FromArgb(192, 57, 43), BtnSterge_Click));
-            this.Controls.Add(pnlBtn);
+
+            // ── Main layout ──
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(0)
+            };
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // header
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));   // filter
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // content
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // buttons
+
+            mainLayout.Controls.Add(pnlTop, 0, 0);
+            mainLayout.Controls.Add(pnlFilter, 0, 1);
+            mainLayout.Controls.Add(dgv, 0, 2);
+            mainLayout.Controls.Add(pnlBtn, 0, 3);
+
+            this.Controls.Add(mainLayout);
+            this.PerformLayout();
         }
 
         private Button MakeBtn(string text, Color color, EventHandler onClick)
@@ -125,18 +147,17 @@ namespace SistemEvidentaCursuri.Forms
         private void LoadData()
         {
             dgv.DataSource = DatabaseHelper.GetAllCursuri();
-            SetColumns();
         }
 
         private void ApplyFilter()
         {
             int? durata = chkDurata.Checked ? (int)numDurata.Value : null;
             dgv.DataSource = DatabaseHelper.FilterCursuri(txtFormator.Text, durata);
-            SetColumns();
         }
 
         private void SetColumns()
         {
+            if (dgv == null || dgv.Columns == null || dgv.Columns.Count == 0) return;
             if (dgv.Columns.Contains("IdCurs"))     dgv.Columns["IdCurs"].Visible = false;
             if (dgv.Columns.Contains("Denumire"))   dgv.Columns["Denumire"].HeaderText = "Denumire Curs";
             if (dgv.Columns.Contains("Formator"))   dgv.Columns["Formator"].HeaderText = "Formator";

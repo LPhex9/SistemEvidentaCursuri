@@ -1,3 +1,6 @@
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 using SistemEvidentaCursuri.Data;
 using SistemEvidentaCursuri.Models;
 
@@ -21,23 +24,22 @@ namespace SistemEvidentaCursuri.Forms
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(245, 245, 250);
 
-            // ── Top bar ──
-            var pnlTop = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.FromArgb(41, 128, 185) };
+            // ── Header ──
+            var pnlTop = new Panel { BackColor = Color.FromArgb(41, 128, 185) };
+            pnlTop.Height = 50;
             var lblTitle = new Label
             {
                 Text = "👤 Cursanți",
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Dock = DockStyle.Left,
-                Width = 200,
+                Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 0, 0, 0)
             };
             pnlTop.Controls.Add(lblTitle);
-            this.Controls.Add(pnlTop);
 
             // ── Search bar ──
-            var pnlSearch = new Panel { Dock = DockStyle.Top, Height = 45, Padding = new Padding(10, 8, 10, 0) };
+            var pnlSearch = new Panel { Height = 45, Padding = new Padding(10, 8, 10, 0), BackColor = this.BackColor };
             txtSearch = new TextBox
             {
                 PlaceholderText = "🔍 Caută după Nume sau Email...",
@@ -47,10 +49,9 @@ namespace SistemEvidentaCursuri.Forms
             txtSearch.TextChanged += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(txtSearch.Text)) LoadData();
-                else { dgv.DataSource = DatabaseHelper.SearchCursanti(txtSearch.Text); SetColumns(); }
+                else { dgv.DataSource = DatabaseHelper.SearchCursanti(txtSearch.Text); }
             };
             pnlSearch.Controls.Add(txtSearch);
-            this.Controls.Add(pnlSearch);
 
             // ── DataGridView ──
             dgv = new DataGridView
@@ -74,20 +75,41 @@ namespace SistemEvidentaCursuri.Forms
             };
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgv.ColumnHeadersHeight = 35;
-            this.Controls.Add(dgv);
+            dgv.DataBindingComplete += (s, e) => SetColumns();
 
             // ── Buttons ──
             var pnlBtn = new FlowLayoutPanel
             {
-                Dock = DockStyle.Bottom,
+                FlowDirection = FlowDirection.RightToLeft,
                 Height = 50,
                 Padding = new Padding(10, 8, 10, 8),
-                BackColor = Color.FromArgb(240, 240, 245)
+                BackColor = Color.FromArgb(240, 240, 245),
+                Dock = DockStyle.Fill
             };
             pnlBtn.Controls.Add(MakeBtn("➕ Adaugă", Color.FromArgb(39, 174, 96), BtnAdauga_Click));
             pnlBtn.Controls.Add(MakeBtn("✏️ Modifică", Color.FromArgb(41, 128, 185), BtnModifica_Click));
             pnlBtn.Controls.Add(MakeBtn("🗑️ Șterge", Color.FromArgb(192, 57, 43), BtnSterge_Click));
-            this.Controls.Add(pnlBtn);
+
+            // ── Main layout ──
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(0)
+            };
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+
+            mainLayout.Controls.Add(pnlTop, 0, 0);
+            mainLayout.Controls.Add(pnlSearch, 0, 1);
+            mainLayout.Controls.Add(dgv, 0, 2);
+            mainLayout.Controls.Add(pnlBtn, 0, 3);
+
+            this.Controls.Add(mainLayout);
+            this.PerformLayout();
         }
 
         private Button MakeBtn(string text, Color color, EventHandler onClick)
@@ -112,17 +134,38 @@ namespace SistemEvidentaCursuri.Forms
         private void LoadData()
         {
             dgv.DataSource = DatabaseHelper.GetAllCursanti();
-            SetColumns();
         }
 
         private void SetColumns()
         {
+            if (dgv == null || dgv.Columns == null || dgv.Columns.Count == 0) return;
+
             if (dgv.Columns.Contains("IdCursant"))   dgv.Columns["IdCursant"].Visible = false;
             if (dgv.Columns.Contains("NumeComplet")) dgv.Columns["NumeComplet"].Visible = false;
-            if (dgv.Columns.Contains("Nume"))        { dgv.Columns["Nume"].HeaderText = "Nume"; dgv.Columns["Nume"].Width = 150; }
-            if (dgv.Columns.Contains("Prenume"))     { dgv.Columns["Prenume"].HeaderText = "Prenume"; dgv.Columns["Prenume"].Width = 150; }
-            if (dgv.Columns.Contains("Telefon"))     dgv.Columns["Telefon"].HeaderText = "Telefon";
-            if (dgv.Columns.Contains("Email"))       dgv.Columns["Email"].HeaderText = "Email";
+
+            if (dgv.Columns.Contains("Nume"))
+            {
+                var col = dgv.Columns["Nume"];
+                if (col != null) { col.HeaderText = "Nume"; col.Width = 150; }
+            }
+
+            if (dgv.Columns.Contains("Prenume"))
+            {
+                var col = dgv.Columns["Prenume"];
+                if (col != null) { col.HeaderText = "Prenume"; col.Width = 150; }
+            }
+
+            if (dgv.Columns.Contains("Telefon"))
+            {
+                var col = dgv.Columns["Telefon"];
+                if (col != null) col.HeaderText = "Telefon";
+            }
+
+            if (dgv.Columns.Contains("Email"))
+            {
+                var col = dgv.Columns["Email"];
+                if (col != null) col.HeaderText = "Email";
+            }
         }
 
         private Cursant? GetSelected()

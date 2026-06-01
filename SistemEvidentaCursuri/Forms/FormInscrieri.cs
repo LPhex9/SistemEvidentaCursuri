@@ -1,3 +1,7 @@
+﻿using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 using SistemEvidentaCursuri.Data;
 using SistemEvidentaCursuri.Models;
 
@@ -24,22 +28,21 @@ namespace SistemEvidentaCursuri.Forms
             this.BackColor = Color.FromArgb(245, 245, 250);
 
             // ── Top bar ──
-            var pnlTop = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.FromArgb(230, 126, 34) };
+            var pnlTop = new Panel { BackColor = Color.FromArgb(230, 126, 34) };
+            pnlTop.Height = 50;
             var lblTitle = new Label
             {
                 Text = "📝 Înscrieri",
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Dock = DockStyle.Left,
-                Width = 200,
+                Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 0, 0, 0)
             };
             pnlTop.Controls.Add(lblTitle);
-            this.Controls.Add(pnlTop);
 
             // ── Add form ──
-            var pnlAdd = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(253, 243, 233), Padding = new Padding(10, 8, 10, 5) };
+            var pnlAdd = new Panel { Height = 60, BackColor = Color.FromArgb(253, 243, 233), Padding = new Padding(10, 8, 10, 5) };
             var flow = new FlowLayoutPanel { Dock = DockStyle.Fill };
 
             flow.Controls.Add(new Label { Text = "Cursant:", TextAlign = ContentAlignment.MiddleLeft, Width = 60, Height = 30 });
@@ -70,7 +73,6 @@ namespace SistemEvidentaCursuri.Forms
             btnAdd.Click += BtnAdd_Click;
             flow.Controls.Add(btnAdd);
             pnlAdd.Controls.Add(flow);
-            this.Controls.Add(pnlAdd);
 
             // ── DataGridView ──
             dgv = new DataGridView
@@ -94,12 +96,13 @@ namespace SistemEvidentaCursuri.Forms
             };
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgv.ColumnHeadersHeight = 35;
-            this.Controls.Add(dgv);
+            dgv.DataBindingComplete += (s, e) => ConfigureColumns();
 
             // ── Bottom ──
             var pnlBtn = new FlowLayoutPanel
             {
-                Dock = DockStyle.Bottom,
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
                 Height = 50,
                 Padding = new Padding(10, 8, 10, 8),
                 BackColor = Color.FromArgb(253, 243, 233)
@@ -119,7 +122,27 @@ namespace SistemEvidentaCursuri.Forms
             btnSterge.FlatAppearance.BorderSize = 0;
             btnSterge.Click += BtnSterge_Click;
             pnlBtn.Controls.Add(btnSterge);
-            this.Controls.Add(pnlBtn);
+
+            // ── Main layout ──
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(0)
+            };
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // header
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60));   // add panel
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // content
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // bottom
+
+            mainLayout.Controls.Add(pnlTop, 0, 0);
+            mainLayout.Controls.Add(pnlAdd, 0, 1);
+            mainLayout.Controls.Add(dgv, 0, 2);
+            mainLayout.Controls.Add(pnlBtn, 0, 3);
+
+            this.Controls.Add(mainLayout);
+            this.PerformLayout();
         }
 
         private void LoadCombos()
@@ -139,6 +162,15 @@ namespace SistemEvidentaCursuri.Forms
         {
             var data = DatabaseHelper.GetAllInscrieri();
             dgv.DataSource = data;
+
+            int count = data.Count;
+            decimal total = data.Where(i => i.StatusPlata == "Achitat").Sum(i => i.PretCurs);
+            lblTotal.Text = $"Total: {count} înscrieri | Încasat: {total:N2} MDL";
+        }
+
+        private void ConfigureColumns()
+        {
+            if (dgv == null || dgv.Columns == null || dgv.Columns.Count == 0) return;
             if (dgv.Columns.Contains("IdInscriere"))  dgv.Columns["IdInscriere"].Visible = false;
             if (dgv.Columns.Contains("IdCursant"))    dgv.Columns["IdCursant"].Visible = false;
             if (dgv.Columns.Contains("IdCurs"))       dgv.Columns["IdCurs"].Visible = false;
@@ -147,10 +179,6 @@ namespace SistemEvidentaCursuri.Forms
             if (dgv.Columns.Contains("DenumireCurs")) dgv.Columns["DenumireCurs"].HeaderText = "Curs";
             if (dgv.Columns.Contains("DataInscriere")) dgv.Columns["DataInscriere"].HeaderText = "Data Înscrierii";
             if (dgv.Columns.Contains("StatusPlata"))  dgv.Columns["StatusPlata"].HeaderText = "Status Plată";
-
-            int count = data.Count;
-            decimal total = data.Where(i => i.StatusPlata == "Achitat").Sum(i => i.PretCurs);
-            lblTotal.Text = $"Total: {count} înscrieri | Încasat: {total:N2} MDL";
         }
 
         private void BtnAdd_Click(object? sender, EventArgs e)

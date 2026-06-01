@@ -1,3 +1,8 @@
+﻿using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using SistemEvidentaCursuri.Data;
 
 namespace SistemEvidentaCursuri.Forms
@@ -21,7 +26,8 @@ namespace SistemEvidentaCursuri.Forms
             this.BackColor = Color.FromArgb(245, 245, 250);
 
             // ── Top bar ──
-            var pnlTop = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.FromArgb(142, 68, 173) };
+            var pnlTop = new Panel { BackColor = Color.FromArgb(142, 68, 173) };
+            pnlTop.Height = 50;
             var lblTitle = new Label
             {
                 Text = "📊 Raport Sumar",
@@ -32,13 +38,11 @@ namespace SistemEvidentaCursuri.Forms
                 Padding = new Padding(10, 0, 0, 0)
             };
             pnlTop.Controls.Add(lblTitle);
-            this.Controls.Add(pnlTop);
 
             // ── Stats panel ──
-            var pnlStats = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(243, 235, 250), Padding = new Padding(10, 5, 10, 5) };
+            var pnlStats = new Panel { Height = 60, BackColor = Color.FromArgb(243, 235, 250), Padding = new Padding(10, 5, 10, 5) };
             lblStats = new Label { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9F), TextAlign = ContentAlignment.MiddleLeft };
             pnlStats.Controls.Add(lblStats);
-            this.Controls.Add(pnlStats);
 
             // ── DataGridView ──
             dgv = new DataGridView
@@ -61,10 +65,10 @@ namespace SistemEvidentaCursuri.Forms
             };
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgv.ColumnHeadersHeight = 35;
-            this.Controls.Add(dgv);
+            dgv.DataBindingComplete += (s, e) => ConfigureColumns();
 
             // ── Buttons ──
-            var pnlBtn = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, Padding = new Padding(10, 8, 10, 8), BackColor = Color.FromArgb(243, 235, 250) };
+            var pnlBtn = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 50, Padding = new Padding(10, 8, 10, 8), BackColor = Color.FromArgb(243, 235, 250) };
             var btnExport = new Button
             {
                 Text = "📄 Export TXT",
@@ -78,7 +82,27 @@ namespace SistemEvidentaCursuri.Forms
             btnExport.FlatAppearance.BorderSize = 0;
             btnExport.Click += BtnExport_Click;
             pnlBtn.Controls.Add(btnExport);
-            this.Controls.Add(pnlBtn);
+
+            // ── Main layout ──
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(0)
+            };
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // header
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60));   // stats
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // content
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // buttons
+
+            mainLayout.Controls.Add(pnlTop, 0, 0);
+            mainLayout.Controls.Add(pnlStats, 0, 1);
+            mainLayout.Controls.Add(dgv, 0, 2);
+            mainLayout.Controls.Add(pnlBtn, 0, 3);
+
+            this.Controls.Add(mainLayout);
+            this.PerformLayout();
         }
 
         private void LoadData()
@@ -93,14 +117,19 @@ namespace SistemEvidentaCursuri.Forms
                 table.Rows.Add(nume, nr, suma);
 
             dgv.DataSource = table;
-            if (dgv.Columns.Contains("Sumă Achitată (MDL)"))
-                dgv.Columns["Sumă Achitată (MDL)"].DefaultCellStyle.Format = "N2";
 
             var (totalCursanti, sumaTotala, medie, cursTop) = DatabaseHelper.GetStatistici();
             lblStats.Text = $"📋 Total cursanți: {totalCursanti}   |   " +
                             $"💰 Sumă totală încasată: {sumaTotala:N2} MDL   |   " +
                             $"📈 Medie/cursant: {medie:N2} MDL   |   " +
                             $"🏆 Cursul top: {cursTop}";
+        }
+
+        private void ConfigureColumns()
+        {
+            if (dgv == null || dgv.Columns == null || dgv.Columns.Count == 0) return;
+            if (dgv.Columns.Contains("Sumă Achitată (MDL)"))
+                dgv.Columns["Sumă Achitată (MDL)"].DefaultCellStyle.Format = "N2";
         }
 
         private void BtnExport_Click(object? sender, EventArgs e)
