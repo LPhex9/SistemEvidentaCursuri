@@ -119,7 +119,7 @@ namespace SistemEvidentaCursuri.Forms
         {
             if (dgv.Columns.Contains("IdCursant"))   dgv.Columns["IdCursant"].Visible = false;
             if (dgv.Columns.Contains("NumeComplet")) dgv.Columns["NumeComplet"].Visible = false;
-            if (dgv.Columns.Contains("Nume"))        { dgv.Columns["Nume"].HeaderText = "Nume"; dgv.Columns["Nume"].Width = 150; }
+            if (dgv.Columns.Contains("Nume")) { dgv.Columns["Nume"].HeaderText = "Nume"; dgv.Columns["Nume"].Width = 150; }
             if (dgv.Columns.Contains("Prenume"))     { dgv.Columns["Prenume"].HeaderText = "Prenume"; dgv.Columns["Prenume"].Width = 150; }
             if (dgv.Columns.Contains("Telefon"))     dgv.Columns["Telefon"].HeaderText = "Telefon";
             if (dgv.Columns.Contains("Email"))       dgv.Columns["Email"].HeaderText = "Email";
