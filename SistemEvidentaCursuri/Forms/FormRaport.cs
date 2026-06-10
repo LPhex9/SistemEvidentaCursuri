@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using SistemEvidentaCursuri.Data;
+=======
+﻿using SistemEvidentaCursuri.Data;
+>>>>>>> Stashed changes
 
 namespace SistemEvidentaCursuri.Forms
 {
@@ -123,6 +126,14 @@ namespace SistemEvidentaCursuri.Forms
                             $"💰 Sumă totală încasată: {sumaTotala:N2} MDL   |   " +
                             $"📈 Medie/cursant: {medie:N2} MDL   |   " +
                             $"🏆 Cursul top: {cursTop}";
+            // column formatting done in DataBindingComplete
+        }
+
+        private void ConfigureColumns()
+        {
+            if (dgv == null || dgv.Columns == null || dgv.Columns.Count == 0) return;
+            if (dgv.Columns.Contains("Sumă Achitată (MDL)"))
+                dgv.Columns["Sumă Achitată (MDL)"].DefaultCellStyle.Format = "N2";
         }
 
         private void ConfigureColumns()

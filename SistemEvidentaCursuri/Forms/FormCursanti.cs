@@ -90,7 +90,7 @@ namespace SistemEvidentaCursuri.Forms
             pnlBtn.Controls.Add(MakeBtn("✏️ Modifică", Color.FromArgb(41, 128, 185), BtnModifica_Click));
             pnlBtn.Controls.Add(MakeBtn("🗑️ Șterge", Color.FromArgb(192, 57, 43), BtnSterge_Click));
 
-            // ── Main layout ──
+            // ── Main layout (header / search / content / buttons) ──
             var mainLayout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -98,10 +98,10 @@ namespace SistemEvidentaCursuri.Forms
                 RowCount = 4,
                 Padding = new Padding(0)
             };
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // header
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45));   // search
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // content
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));   // buttons
 
             mainLayout.Controls.Add(pnlTop, 0, 0);
             mainLayout.Controls.Add(pnlSearch, 0, 1);
@@ -134,6 +134,7 @@ namespace SistemEvidentaCursuri.Forms
         private void LoadData()
         {
             dgv.DataSource = DatabaseHelper.GetAllCursanti();
+            // columns configured in DataBindingComplete -> SetColumns
         }
 
         private void SetColumns()
@@ -170,7 +171,11 @@ namespace SistemEvidentaCursuri.Forms
 
         private Cursant? GetSelected()
         {
-            if (dgv.SelectedRows.Count == 0) { MessageBox.Show("Selectați un cursant.", "Atenție", MessageBoxButtons.OK, MessageBoxIcon.Warning); return null; }
+            if (dgv.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Selectați un cursant.", "Atenție", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return null;
+            }
             return dgv.SelectedRows[0].DataBoundItem as Cursant;
         }
 
