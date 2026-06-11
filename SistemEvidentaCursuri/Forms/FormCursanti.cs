@@ -11,7 +11,7 @@ namespace SistemEvidentaCursuri.Forms
         public FormCursanti()
         {
             InitializeComponent();
-            LoadData();
+            this.Load += (s, e) => LoadData();
         }
 
         private void InitializeComponent()
@@ -117,12 +117,34 @@ namespace SistemEvidentaCursuri.Forms
 
         private void SetColumns()
         {
-            if (dgv.Columns.Contains("IdCursant"))   dgv.Columns["IdCursant"].Visible = false;
-            if (dgv.Columns.Contains("NumeComplet")) dgv.Columns["NumeComplet"].Visible = false;
-            if (dgv.Columns.Contains("Nume"))        { dgv.Columns["Nume"].HeaderText = "Nume"; dgv.Columns["Nume"].Width = 150; }
-            if (dgv.Columns.Contains("Prenume"))     { dgv.Columns["Prenume"].HeaderText = "Prenume"; dgv.Columns["Prenume"].Width = 150; }
-            if (dgv.Columns.Contains("Telefon"))     dgv.Columns["Telefon"].HeaderText = "Telefon";
-            if (dgv.Columns.Contains("Email"))       dgv.Columns["Email"].HeaderText = "Email";
+            if (dgv == null || dgv.Columns.Count == 0) return;
+
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                if (col == null) continue;
+
+                switch (col.Name)
+                {
+                    case "IdCursant":
+                    case "NumeComplet":
+                        col.Visible = false;
+                        break;
+                    case "Nume":
+                        col.HeaderText = "Nume";
+                        col.FillWeight = 150;
+                        break;
+                    case "Prenume":
+                        col.HeaderText = "Prenume";
+                        col.FillWeight = 150;
+                        break;
+                    case "Telefon":
+                        col.HeaderText = "Telefon";
+                        break;
+                    case "Email":
+                        col.HeaderText = "Email";
+                        break;
+                }
+            }
         }
 
         private Cursant? GetSelected()

@@ -10,7 +10,7 @@ namespace SistemEvidentaCursuri.Forms
         public FormRaport()
         {
             InitializeComponent();
-            LoadData();
+            this.Load += (s, e) => LoadData();
         }
 
         private void InitializeComponent()

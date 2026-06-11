@@ -6,7 +6,7 @@ namespace SistemEvidentaCursuri.Data
     public static class DatabaseHelper
     {
         private static readonly string ConnectionString =
-            @"Server=.\SQLEXPRESS;Database=CentruInstruire;Integrated Security=True;TrustServerCertificate=True;";
+            @"Server=.\SQLEXPRESS03;Database=CentruInstruire;Integrated Security=True;TrustServerCertificate=True;";
 
         public static SqlConnection GetConnection()
         {

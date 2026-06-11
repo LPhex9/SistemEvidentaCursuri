@@ -12,8 +12,7 @@ namespace SistemEvidentaCursuri.Forms
         public FormInscrieri()
         {
             InitializeComponent();
-            LoadCombos();
-            LoadData();
+            this.Load += (s, e) => { LoadCombos(); LoadData(); };
         }
 
         private void InitializeComponent()
